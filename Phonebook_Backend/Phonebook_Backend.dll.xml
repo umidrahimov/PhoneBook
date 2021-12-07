@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<dal>
+		<connection name="default" providerName="MySql.Data.MySqlClient" connectionString="server=127.0.0.1;uid=db_user;pwd=P@s$w0rd123!;database=phonebook_db"/>
+	</dal>
+	<listener>
+		<endpointUrl>http://+:8080/</endpointUrl>
+	</listener>
+	<sqlQuery>
+		<add>INSERT INTO users (user_id, name, phone) VALUES ()</add>
+		<edit></edit>
+		<list></list>
+	</sqlQuery>
+		<!--<logger>
+		<emergencyLogDirectory>C:\sk2\logs</emergencyLogDirectory>
+		<globalLogLevel>4</globalLogLevel>
+		<defaultDestination>exceptionLog</defaultDestination>
+		<destinations>
+			<destination name="exceptionLog" type="eventLog" logName="Application" sourceName="FCMB" eventId="50016" />
+			<destination name="fcmbRequestChannelLog" type="simple" fileName="./request_http_ussd_localhost.log" period="day" maxAge="180" maxSize="200"/>
+			<destination name="responseFileLog" type="simple" fileName="./response_172.27.15.103.log" period="day" maxAge="180" maxSize="200"/>
+			<destination name="airtimeRequestServiceLog" type="simple" fileName="./airtime_request_http.log" period="day" maxAge="180" maxSize="200"/>
+			<destination name="CreditCheckLog" type="simple" fileName="./CreditCheck.log" period="day" maxAge="180" maxSize="200"/>
+			<destination name="PayLaterAPILog" type="simple" fileName="./PayLaterAPI.log" period="day" maxAge="180" maxsize="500"/>
+			<destination name="PayLaterBillingLog" type="simple" filename="./PayLaterBilling.log" period="day" maxAge="180" maxsize="500"/>
+		</destinations>
+		<logInfoMap>
+			<key name="*" destinationName="exceptionLog" />
+			<key name="exception" destinationName="exceptionLog"/>
+			<key name="airtimeRequestService" destinationName="airtimeRequestServiceLog"/>
+			<key name="CreditCheck" destinationName="CreditCheckLog"/>
+			<key name="requestservice" destinationName="requestserviceLog"/>
+			<key name="response" destinationName="responseFileLog"/>
+			<key name="httpserver:http://+:10030/simkredit/" destinationName="fcmbRequestChannelLog" />
+			<key name="PayLaterRequestAPI" destinationName="PayLaterAPILog"/>
+			<key name="PayLaterBilling" destinationName="PayLaterBillingLog"/>
+		</logInfoMap>
+	</logger>-->
+
+	<!--<managers>
+		<manager name="SubscriberManager" assembly="Simbrella.SimKredit.Core" type="Simbrella.SimKredit.Core.Business.SubscriberManager"/>
+	</managers>-->
+
+	<url>http://+:8181/fcmb/requests/api/</url>
+</configuration>
