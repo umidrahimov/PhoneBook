@@ -1,9 +1,7 @@
-﻿using Newtonsoft.Json;
-using Simbrella.FrameworkCore.Technology.Config.Abstractions;
-using Simbrella.FrameworkCore.Technology.Core;
-using Simbrella.FrameworkCore.Technology.DAL.Abstractions;
-using Simbrella.FrameworkCore.Technology.Factories;
-using Simbrella.FrameworkCore.Technology.Integration.Http;
+﻿using Microsoft.Extensions.Configuration;
+using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
+using Phonebook_Backend.Server;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -14,15 +12,20 @@ namespace AbbTech
     class Helper
     {
         protected HttpServer server;
-        IConfigManager config;
-        IDAL dal;
+        public IConfigurationRoot Configuration { get; set; }
+        string connection;
+        //IConfigManager config;
+        //IDAL dal;
 
         public Helper()
         {
-            config = Factory.GetConfigManager();
-            dal = Factory.GetDal();
-            string endpointUrl = config["listener"]["endpointUrl"].Value;
+            Configuration = new ConfigurationBuilder()
+                .SetBasePath(AppDomain.CurrentDomain.BaseDirectory)
+                .AddJsonFile("appsettings.json").Build();
+
+            string endpointUrl = Configuration.GetSection("listener").GetSection("endpointUrl").Value;
             server = new HttpServer(endpointUrl);
+            connection = Configuration["ConnectionStrings:Default"];
         }
 
         public void Start()
@@ -81,23 +84,26 @@ namespace AbbTech
 
             User user = JsonConvert.DeserializeObject<User>(request.Body);
 
-            string query = $"INSERT INTO users (name, phone) VALUES (\"{user.name}\", \"{user.phone}\");";
-            query += "SELECT LAST_INSERT_ID();";
-
-
-            DbDataReader queryResult = dal.ExecuteReader(query);
-
-            queryResult.Read();
-
-            AddResponse addResponse = new AddResponse()
+            using (MySqlConnection conn = new MySqlConnection(connection))
             {
-                user_id = queryResult.GetInt32(0),
-                operation_type = Operation_type.add,
-                operation_status = (queryResult.RecordsAffected > 0) ? Operation_status.success : Operation_status.fail
-            };
+                conn.Open();
+                string query = $"INSERT INTO users (name, phone) VALUES (\"{user.name}\", \"{user.phone}\");";
+                query += "SELECT LAST_INSERT_ID();";
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                using (var reader = cmd.ExecuteReader())
+                {
+                    reader.Read();
 
-            response.StatusCode = 200;
-            response.Body = JsonConvert.SerializeObject(addResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+                    AddResponse addResponse = new AddResponse()
+                    {
+                        user_id = reader.GetInt32(0),
+                        operation_type = Operation_type.add,
+                        operation_status = (reader.RecordsAffected > 0) ? Operation_status.success : Operation_status.fail
+                    };
+                    response.StatusCode = 200;
+                    response.Body = JsonConvert.SerializeObject(addResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+                }
+            }
 
             return response;
 
@@ -109,20 +115,27 @@ namespace AbbTech
 
             User user = JsonConvert.DeserializeObject<User>(request.Body);
 
-            string query = $"UPDATE users SET name = \"{user.name}\", phone =\"{user.phone}\" \n";
-            query += $"WHERE user_id={user.user_id}";
-
-            int queryResult = dal.Execute(query);
-
-            EditResponse editResponse = new EditResponse()
+            using (MySqlConnection conn = new MySqlConnection(connection))
             {
-                user_id = user.user_id,
-                operation_type = Operation_type.edit,
-                operation_status = (queryResult == 1) ? Operation_status.success : Operation_status.fail
-            };
+                conn.Open();
 
-            response.StatusCode = 200;
-            response.Body = JsonConvert.SerializeObject(editResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+                string query = $"UPDATE users SET name = \"{user.name}\", phone =\"{user.phone}\" \n";
+                query += $"WHERE user_id={user.user_id}";
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                int queryResult = cmd.ExecuteNonQuery();
+
+                EditResponse editResponse = new EditResponse()
+                {
+                    user_id = user.user_id,
+                    operation_type = Operation_type.edit,
+                    operation_status = (queryResult == 1) ? Operation_status.success : Operation_status.fail
+                };
+
+                response.StatusCode = 200;
+                response.Body = JsonConvert.SerializeObject(editResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+            }
 
             return response;
         }
@@ -131,19 +144,26 @@ namespace AbbTech
         {
             HttpResponse response = new HttpResponse();
 
-            string query = $"DELETE from users WHERE user_id={request.Parameters["user_id"]}\n";
-
-            int queryResult = dal.Execute(query);
-
-            DeleteResponse editResponse = new DeleteResponse()
+            using (MySqlConnection conn = new MySqlConnection(connection))
             {
-                user_id = Int32.Parse(request.Parameters["user_id"]),
-                operation_type = Operation_type.delete,
-                operation_status = (queryResult == 1) ? Operation_status.success : Operation_status.fail
-            };
+                conn.Open();
 
-            response.StatusCode = 200;
-            response.Body = JsonConvert.SerializeObject(editResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+                string query = $"DELETE from users WHERE user_id={request.Parameters["user_id"]}\n";
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+
+                int queryResult = cmd.ExecuteNonQuery();
+
+                DeleteResponse editResponse = new DeleteResponse()
+                {
+                    user_id = Int32.Parse(request.Parameters["user_id"]),
+                    operation_type = Operation_type.delete,
+                    operation_status = (queryResult == 1) ? Operation_status.success : Operation_status.fail
+                };
+
+                response.StatusCode = 200;
+                response.Body = JsonConvert.SerializeObject(editResponse, new Newtonsoft.Json.Converters.StringEnumConverter());
+            }
 
             return response;
         }
@@ -155,11 +175,20 @@ namespace AbbTech
 
             try
             {
-                int queryResult = Convert.ToInt32(dal.GetScalar("SELECT 1"));
-                if (queryResult == 1)
+                using (MySqlConnection conn = new MySqlConnection(connection))
                 {
-                    response.Body = "{\"status\": \"OK\"}";
+                    conn.Open();
+
+                    MySqlCommand cmd = new MySqlCommand("SELECT 1", conn);
+
+                    int queryResult = cmd.ExecuteNonQuery();
+
+                    if (queryResult == 1)
+                    {
+                        response.Body = "{\"status\": \"OK\"}";
+                    }
                 }
+
             }
             catch (Exception)
             {
@@ -173,25 +202,32 @@ namespace AbbTech
         {
             HttpResponse response = new HttpResponse();
 
-            string query = $"SELECT user_id, name, phone FROM users;";
-
-            DbDataReader queryResult = dal.ExecuteReader(query);
-
-            List<User> list = new List<User>();
-            while (queryResult.Read())
+            using (MySqlConnection conn = new MySqlConnection(connection))
             {
-                User user = new User()
+                conn.Open();
+
+                string query = $"SELECT user_id, name, phone FROM users;";
+
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                List<User> list = new List<User>();
+
+                using (var reader = cmd.ExecuteReader())
                 {
-                    user_id = queryResult.GetInt32(0),
-                    name = queryResult.GetString(1),
-                    phone = queryResult.GetString(2)
-                };
-                list.Add(user);
+                    while (reader.Read())
+                    {
+                        User user = new User()
+                        {
+                            user_id = reader.GetInt32(0),
+                            name = reader.GetString(1),
+                            phone = reader.GetString(2)
+                        };
+                        list.Add(user);
+                    }
+                }
+
+                response.StatusCode = 200;
+                response.Body = JsonConvert.SerializeObject(list, new Newtonsoft.Json.Converters.StringEnumConverter());
             }
-
-
-            response.StatusCode = 200;
-            response.Body = JsonConvert.SerializeObject(list, new Newtonsoft.Json.Converters.StringEnumConverter());
 
             return response;
 
@@ -200,23 +236,27 @@ namespace AbbTech
         {
             HttpResponse response = new HttpResponse();
 
-            string query = $"SELECT user_id, name, phone FROM users \n";
-            query += $"WHERE user_id={request.Parameters["id"]}";
-
-            DbDataReader queryResult = dal.ExecuteReader(query);
-
-            queryResult.Read();
-
-
-                User user = new User()
+            using (MySqlConnection conn = new MySqlConnection(connection))
+            {
+                conn.Open();
+                string query = $"SELECT user_id, name, phone FROM users \n";
+                query += $"WHERE user_id={request.Parameters["id"]}";
+                MySqlCommand cmd = new MySqlCommand(query, conn);
+                using (var reader = cmd.ExecuteReader())
                 {
-                    user_id = queryResult.GetInt32(0),
-                    name = queryResult.GetString(1),
-                    phone = queryResult.GetString(2)
-                };
+                    reader.Read();
 
-            response.StatusCode = 200;
-            response.Body = JsonConvert.SerializeObject(user, new Newtonsoft.Json.Converters.StringEnumConverter());
+                    User user = new User()
+                    {
+                        user_id = reader.GetInt32(0),
+                        name = reader.GetString(1),
+                        phone = reader.GetString(2)
+                    };
+
+                    response.StatusCode = 200;
+                    response.Body = JsonConvert.SerializeObject(user, new Newtonsoft.Json.Converters.StringEnumConverter());
+                }
+            }
 
             return response;
 

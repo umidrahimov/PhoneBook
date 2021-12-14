@@ -14,6 +14,8 @@ namespace Phonebook_Frontend
         public static void Main(string[] args)
         {
             CreateHostBuilder(args).Build().Run();
+            var builder = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build().GetSection("AppSettings")["APP_Name"];
+
         }
 
         public static IHostBuilder CreateHostBuilder(string[] args) =>

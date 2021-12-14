@@ -110,3 +110,4 @@ C:\Users\urahimov\source\repos\Phonebook\Phonebook_Frontend\bin\Debug\netcoreapp
 C:\Users\urahimov\source\repos\Phonebook\Phonebook_Frontend\obj\Debug\netcoreapp3.1\Phonebook_Frontend.MvcApplicationPartsAssemblyInfo.cache
 C:\Users\urahimov\source\repos\Phonebook\Phonebook_Frontend\obj\Debug\netcoreapp3.1\Razor\Views\Home\Create.cshtml.g.cs
 C:\Users\urahimov\source\repos\Phonebook\Phonebook_Frontend\obj\Debug\netcoreapp3.1\Razor\Views\Home\Edit.cshtml.g.cs
+C:\Users\urahimov\source\repos\Phonebook\Phonebook_Frontend\obj\Debug\netcoreapp3.1\Phonebook_Frontend.csprojAssemblyReference.cache

@@ -42,9 +42,21 @@
       "frameworks": {
         "netcoreapp3.1": {
           "dependencies": {
-            "Simbrella.FrameworkCore.Technology": {
+            "Microsoft.Extensions.Configuration": {
               "target": "Package",
-              "version": "[1.28.8, )"
+              "version": "[6.0.0, )"
+            },
+            "Microsoft.Extensions.Configuration.Json": {
+              "target": "Package",
+              "version": "[6.0.0, )"
+            },
+            "MySql.Data": {
+              "target": "Package",
+              "version": "[8.0.27, )"
+            },
+            "Newtonsoft.Json": {
+              "target": "Package",
+              "version": "[13.0.1, )"
             }
           },
           "imports": [

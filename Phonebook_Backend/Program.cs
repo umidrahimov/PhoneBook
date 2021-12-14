@@ -1,7 +1,4 @@
-﻿using Simbrella.FrameworkCore.Technology.Integration.Http;
-using Simbrella.FrameworkCore.Technology.Core;
-using System;
-using Simbrella.FrameworkCore.Technology.Config.Abstractions;
+﻿using System;
 
 namespace AbbTech
 {
@@ -14,8 +11,6 @@ namespace AbbTech
             Console.WriteLine($"Server is running on http://+:8080/");
             Console.WriteLine("Press any key to stop HTTP server...");
             Console.ReadLine();
-
-
         }
 
     }
