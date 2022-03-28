@@ -1,0 +1,32 @@
+pipeline {
+    agent any
+    
+    environment {
+        DOCKERHUB_PASSWORD="D3l1M@qa1"
+		DOCKERHUB_USERNAME="umidrahimov"
+        APP_NAME = "phonebook-frontend"
+        REPOSITORY_TAG="${DOCKERHUB_USERNAME}/${APP_NAME}:${BUILD_ID}"
+	}
+    stages {
+        stage('Build docker image') {
+            steps {
+                sh 'docker build --file Phonebook_Frontend/Dockerfile -t ${REPOSITORY_TAG} Phonebook_Frontend/'
+            }
+        }
+        stage('Login to DockerHub') {
+			steps {
+				sh 'docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD'
+			}
+		}
+        stage('Push docker image to registry') {
+            steps {
+                sh 'docker push ${REPOSITORY_TAG}'
+            }
+        }
+         stage('Deploy to Cluster') {
+          steps {
+                sh 'envsubst < ${WORKSPACE}/Phonebook_Frontend/deployment.yaml | kubectl apply -f -'
+            }
+        }
+    }
+}

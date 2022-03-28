@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: frontend-app
+spec:
+  selector:
+    matchLabels:
+      app: frontend-app
+  replicas: 1
+  template: # template for the pods
+    metadata:
+      labels:
+        app: frontend-app
+    spec:
+      containers:
+        - name: frontend-app
+          image: ${REPOSITORY_TAG}
+          imagePullPolicy: IfNotPresent
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: frontend-app-service
+spec:
+  selector:
+    app: frontend-app
+  ports:
+    - name: http
+      port: 5001
+  type: ClusterIP

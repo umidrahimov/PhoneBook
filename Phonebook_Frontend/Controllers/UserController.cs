@@ -18,7 +18,7 @@ namespace Phonebook_Frontend.Controllers
 
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
                 //HTTP GET
                 var responseTask = client.GetAsync("list");
                 responseTask.Wait();

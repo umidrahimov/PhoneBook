@@ -26,7 +26,7 @@ namespace Phonebook_Frontend.Controllers
 
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
                 //HTTP GET
                 var responseTask = client.GetAsync("list");
                 responseTask.Wait();
@@ -62,7 +62,7 @@ namespace Phonebook_Frontend.Controllers
         {
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
 
                 //HTTP POST
                 var postTask = client.PostAsJsonAsync<UserViewModel>("add", user);
@@ -84,7 +84,7 @@ namespace Phonebook_Frontend.Controllers
         {
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
 
                 //HTTP DELETE
                 var deleteTask = client.DeleteAsync("delete?user_id=" + id.ToString());
@@ -102,7 +102,7 @@ namespace Phonebook_Frontend.Controllers
 
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
                 //HTTP GET
                 var responseTask = client.GetAsync("get?id=" + id.ToString());
                 responseTask.Wait();
@@ -125,7 +125,7 @@ namespace Phonebook_Frontend.Controllers
         {
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri("http://localhost:8080/user/");
+                client.BaseAddress = new Uri("http://backend-app-service:8080/user/");
 
                 //HTTP POST
                 var putTask = client.PutAsJsonAsync<UserViewModel>("edit", user);
